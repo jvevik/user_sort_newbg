@@ -937,36 +937,56 @@ bool UserXY::Sort(const Event& event)
 //New background subtraction method:
 
 #if USE_FISSION_PARAMETERS>0
-     for( int j=0; j<event.n_na; j++ ) {
+     for( int i=0; i<event.n_na; i++ ) {
 
-        const int idnum = event.na[j].chn;
+        const int idnum = event.na[i].chn;
 
         if ( IsPPACChannel(idnum) )
              continue;
 
-        const double ppac_t_c_newsub = calib( (int)event.na[j].tdc/8, gain_tna[idnum], shift_tna[idnum] ); // why divide by 8???
+        const double ppac_t_c_newsub = calib( (int)event.na[i].tdc/8, gain_tna[idnum], shift_tna[idnum] ); // why divide by 8???
 
-        if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e )
-            continue;
+        if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
 
-        for( int k=0; k<event.n_na; k++){
+        for( int j=0; j<event.n_na; j++){
 
-            const int idnum2 = event.na[k].chn;
+            const int idnum2 = event.na[j].chn;
 
             if ( !IsPPACChannel(idnum2))
                 continue;
 
-            const double na_e_f_newsub = calib( (int)event.na[k].adc, gain_na[idnum2], shift_na[idnum2] );
-
-            const double na_t_f_newsub = calib( (int)event.na[k].tdc/8, gain_tna[idnum2], shift_tna[idnum2] );
+            const double na_e_f_newsub = calib( (int)event.na[j].adc, gain_na[idnum2], shift_na[idnum2] );
+            
+            const double na_t_f_newsub = calib( (int)event.na[j].tdc/8, gain_tna[idnum2], shift_tna[idnum2] );
 
             if ( CheckNaIpromptGate(na_t_f_newsub) )    >>> add gamma;
             if ( CheckNaIbgGate(na_t_f_newsub) )    >>> subtract gamma;
+            }
+
+          }
+          else if ( CheckPPACbgGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
+
+            for( int k=0; k<event.n_na; k++){
+
+                const int idnum3 = event.na[k].chn;
+
+                if ( !IsPPACChannel(idnum3))
+                    continue;
+
+                const double na_e_f_newsub2 = calib( (int)event.na[k].adc, gain_na[idnum3], shift_na[idnum3] );
+
+                const double na_t_f_newsub2 = calib( (int)event.na[k].tdc/8, gain_tna[idnum3], shift_tna[idnum3] );
+
+                if ( CheckNaIpromptGate(na_t_f_newsub2) )    >>> subtract gamma;
+                if ( CheckNaIbgGate(na_t_f_newsub2) )    >>> subtract gamma;
+                }
+              }
+          }
 
 
             //if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e )   fiss_newsub = 1; // select fission blob in tPPAC vs E_SiRi gate
             //if ( CheckPPACbgGate(ppac_t_c_newsub)     &&  fission_excitation_energy_min[0] < e )   fiss_newsub = 2; // added these to also see background fissions
-      }
+
     }
  #endif /* USE_FISSION_PARAMETERS */
 //****************************************************************************************************
