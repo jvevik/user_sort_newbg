@@ -77,6 +77,10 @@
     //ALFNA og ALFNABAKGRUNN defineres
      Histogram2Dp m_alfna_nofiss,   m_alfna_fiss, m_alfna_fiss_promptFiss;
      Histogram2Dp m_alfna_bg_nofiss,              m_alfna_bg_fiss_promptFiss, m_alfna_bg_fiss_bg;
+     //New background subtraction alfna:
+     Histogram2Dp m_alfna_newsubtract, m_alfna_newsubtract2, m_alfna_bg_newsubtract;
+     Histogram2Dp m_alfna_nofiss_newsubtract, m_alfna_fiss_newsubtract, m_alfna_fiss_promptFiss_newsubtract;
+     Histogram2Dp m_alfna_bg_nofiss_newsubtract, m_alfna_bg_fiss_promptFiss_newsubtract, m_alfna_bg_fiss_bg_newsubtract;
 
      Histogram1Dp h_na_n, h_thick, h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
      Histogram1Dp h_ex, h_ex_nofiss, h_ex_fiss_promptFiss, h_ex_fiss_bg, h_ex_fiss;
@@ -290,6 +294,28 @@ bool UserXY::Command(const std::string& cmd)
                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
 
 
+      //NEW ALFNA and m_e_de plots using the new background subtraction:
+      m_alfna_newsubtract =      Mat( "m_alfna_newsubtract", "E(NaI) : E_{x}",
+                         2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_newsubtract2 =      Mat( "m_alfna_newsubtract2", "E(NaI) : E_{x}",
+                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_nofiss_newsubtract = Mat( "m_alfna_nofiss_newsubtract", "E(NaI) : E_{x} veto for fission",
+                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_bg_newsubtract =   Mat( "m_alfna_bg_newsubtract", "E(NaI) : E_{x} background",
+                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_bg_nofiss_newsubtract = Mat( "m_alfna_bg_nofiss_newsubtract", "E(NaI) : E_{x} background without fission",
+                       2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_fiss_promptFiss_newsubtract = Mat( "m_alfna_fiss_promptFiss_newsubtract", "E(NaI) : E_{x} in coincidence with prompt fission",
+                         2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_bg_fiss_promptFiss_newsubtract = Mat( "m_alfna_bg_fiss_promptFiss_newsubtract", "E(NaI) : E_{x} background with prompt fission",
+                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_bg_fiss_bg_newsubtract = Mat( "m_alfna_bg_fiss_bg_newsubtract", "E(NaI) : E_{x} background with fission background",
+                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_fiss_newsubtract = Mat( "m_alfna_fiss_newsubtract", "E(NaI) : E_{x} coincidence with fission",
+                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+
+      //################################################################
+
      h_na_n = Spec("h_na_n", "NaI multiplicity", 32, 0, 32, "multiplicity");
 
      h_thick = Spec("h_thick", "apparent #DeltaE thickness", 500, 0, 500, "#DeltaE 'thickness' [um]");
@@ -314,6 +340,7 @@ bool UserXY::Command(const std::string& cmd)
      h_ex_fiss_promptFiss  = Spec("h_ex_fiss_promptFiss", "E_{x} all detectors, in coincidence with fission", 2000, -2000, 30000, "E_{x} [keV]");
      h_ex_fiss_bg  = Spec("h_ex_fiss_bg", "E_{x} all detectors, in coincidence with fission background", 2000, -2000, 30000, "E_{x} [keV]");
      h_ex_fiss = Spec("h_ex_fiss", "E_{x} all detectors, in coincidence with fission, bg substracted", 2000, -2000, 30000, "E_{x} [keV]");
+
 
  #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
      // maximum energy of the gammadetectors (x axis) is 12000 keV
@@ -919,6 +946,122 @@ bool UserXY::Sort(const Event& event)
 #endif /* USE_FISSION_PARAMETERS>0 */
  //****************************************************************************************************
 
+#if USE_FISSION_PARAMETERS>0
+
+  for(int i=0; i<event.n_na; i++) {
+
+    const int idnum4 = event.na[i].chn;
+
+    if (IsPPACChannel(idnum4) ){
+
+    const double ppac_t_c_newsub22 = calib( (int)event.na[i].tdc/8, gain_tna[idnum4], shift_tna[idnum4] );
+
+    const double na_e_f_newsub22 = calib( (int)event.na[i].adc, gain_na[idnum4], shift_na[idnum4] );
+
+    const double na_t_f_newsub22 = calib( (int)event.na[i].tdc/8, gain_tna[idnum4], shift_tna[idnum4] );
+
+    const int na_e_int_newsub22 = (int)na_e_f_newsub22;
+    const int na_t_int_newsub22 = (int)na_t_f_newsub22;
+    const int na_t_c_newsub22 = (int)tNaI(na_t_f_newsub22, na_e_f_newsub22, e);
+
+
+
+    double weight = 1;
+
+    if ( CheckNaIpromptGate(na_t_c_newsub22) ) {
+        weight = 1;
+        m_alfna_newsubtract2->Fill( na_e_int_newsub22, ex_int, weight);
+
+    }
+  }
+ }
+#endif /* USE_FISSION_PARAMETERS */
+
+
+
+//****************************************************************************************************
+//New background subtraction method:
+
+#if USE_FISSION_PARAMETERS>0
+     for( int i=0; i<event.n_na; i++ ) {
+
+        const int idnum = event.na[i].chn;
+
+        if ( IsPPACChannel(idnum) ){
+
+
+        const double ppac_t_c_newsub = calib( (int)event.na[i].tdc/8, gain_tna[idnum], shift_tna[idnum] );
+
+        if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
+
+        for( int j=0; j<event.n_na; j++){
+
+            const int idnum2 = event.na[j].chn;
+
+            if ( !IsPPACChannel(idnum2)){
+
+
+            const double na_e_f_newsub = calib( (int)event.na[j].adc, gain_na[idnum2], shift_na[idnum2] );
+
+            const double na_t_f_newsub = calib( (int)event.na[j].tdc/8, gain_tna[idnum2], shift_tna[idnum2] );
+
+            const int na_e_int_newsub = (int)na_e_f_newsub;
+            const int na_t_int_newsub = (int)na_t_f_newsub;
+            const int na_t_c_newsub = (int)tNaI(na_t_f_newsub, na_e_f_newsub, e);
+
+            double weight = 1;
+
+            if ( CheckNaIpromptGate(na_t_c_newsub) ) {
+                weight = 1;
+                m_alfna_newsubtract->Fill( na_e_int_newsub, ex_int, weight);
+            }
+            if ( CheckNaIbgGate(na_t_c_newsub) ) {
+                weight = -1;
+                m_alfna_newsubtract->Fill( na_e_int_newsub, ex_int, weight);
+            }
+
+           }
+            }
+
+          }
+          else if ( CheckPPACbgGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
+
+            for( int k=0; k<event.n_na; k++){
+
+                const int idnum3 = event.na[k].chn;
+
+                if ( !IsPPACChannel(idnum3)){
+
+
+                const double na_e_f_newsub2 = calib( (int)event.na[k].adc, gain_na[idnum3], shift_na[idnum3] );
+
+                const double na_t_f_newsub2 = calib( (int)event.na[k].tdc/8, gain_tna[idnum3], shift_tna[idnum3] );
+
+                const int na_e_int_newsub2 = (int)na_e_f_newsub2;
+                const int na_t_int_newsub2 = (int)na_t_f_newsub2;
+                const int na_t_c_newsub2 = (int)tNaI(na_t_f_newsub2, na_e_f_newsub2, e);
+
+                double weight = 1;
+
+                if ( CheckNaIpromptGate(na_t_c_newsub2) ) {
+                  weight = -1;
+                  m_alfna_newsubtract->Fill(na_e_int_newsub2, ex_int, weight);
+                }
+                if ( CheckNaIbgGate(na_t_c_newsub2) ) {
+                  weight = -1;
+                  m_alfna_newsubtract->Fill(na_e_int_newsub2, ex_int, weight);
+                }
+
+              }
+                }
+              }
+          }
+        }
+
+            //if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e )   fiss_newsub = 1; // select fission blob in tPPAC vs E_SiRi gate
+            //if ( CheckPPACbgGate(ppac_t_c_newsub)     &&  fission_excitation_energy_min[0] < e )   fiss_newsub = 2; // added these to also see background fissions
+
+#endif /* USE_FISSION_PARAMETERS */
 
 #if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
         m_nai_e_evol[id]->Fill( na_e_int, timediff, weight );
@@ -932,73 +1075,8 @@ bool UserXY::Sort(const Event& event)
     m_ede_evol[dei]    ->Fill( ede_int, timediff );
 #endif /* MAKE_TIME_EVOLUTION_PLOTS */
 
-
-//****************************************************************************************************
-//New background subtraction method:
-
-#if USE_FISSION_PARAMETERS>0
-     for( int i=0; i<event.n_na; i++ ) {
-
-        const int idnum = event.na[i].chn;
-
-        if ( IsPPACChannel(idnum) )
-             continue;
-
-        const double ppac_t_c_newsub = calib( (int)event.na[i].tdc/8, gain_tna[idnum], shift_tna[idnum] ); // why divide by 8???
-
-        if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
-
-        for( int j=0; j<event.n_na; j++){
-
-            const int idnum2 = event.na[j].chn;
-
-            if ( !IsPPACChannel(idnum2))
-                continue;
-
-            const double na_e_f_newsub = calib( (int)event.na[j].adc, gain_na[idnum2], shift_na[idnum2] );
-            
-            const double na_t_f_newsub = calib( (int)event.na[j].tdc/8, gain_tna[idnum2], shift_tna[idnum2] );
-
-            if ( CheckNaIpromptGate(na_t_f_newsub) )    >>> add gamma;
-            if ( CheckNaIbgGate(na_t_f_newsub) )    >>> subtract gamma;
-            }
-
-          }
-          else if ( CheckPPACbgGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
-
-            for( int k=0; k<event.n_na; k++){
-
-                const int idnum3 = event.na[k].chn;
-
-                if ( !IsPPACChannel(idnum3))
-                    continue;
-
-                const double na_e_f_newsub2 = calib( (int)event.na[k].adc, gain_na[idnum3], shift_na[idnum3] );
-
-                const double na_t_f_newsub2 = calib( (int)event.na[k].tdc/8, gain_tna[idnum3], shift_tna[idnum3] );
-
-                if ( CheckNaIpromptGate(na_t_f_newsub2) )    >>> subtract gamma;
-                if ( CheckNaIbgGate(na_t_f_newsub2) )    >>> subtract gamma;
-                }
-              }
-          }
-
-
-            //if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e )   fiss_newsub = 1; // select fission blob in tPPAC vs E_SiRi gate
-            //if ( CheckPPACbgGate(ppac_t_c_newsub)     &&  fission_excitation_energy_min[0] < e )   fiss_newsub = 2; // added these to also see background fissions
-
-    }
- #endif /* USE_FISSION_PARAMETERS */
-//****************************************************************************************************
-
-
-
     return true;
 }
-
-// ########################################################################
-// ########################################################################
-// ########################################################################
 
 int main(int argc, char* argv[])
 {
