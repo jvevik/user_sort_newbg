@@ -1018,6 +1018,7 @@ bool UserXY::Sort(const Event& event)
             if ( CheckNaIbgGate(na_t_c_newsub) ) {
                 weight = -1;
                 m_alfna_newsubtract->Fill( na_e_int_newsub, ex_int, weight);
+                m_alfna_bg_newsubtract->Fill( na_e_int_newsub, ex_int, 1);
             }
 
            }
@@ -1046,10 +1047,12 @@ bool UserXY::Sort(const Event& event)
                 if ( CheckNaIpromptGate(na_t_c_newsub2) ) {
                   weight = -1;
                   m_alfna_newsubtract->Fill(na_e_int_newsub2, ex_int, weight);
+                  m_alfna_bg_newsubtract->Fill( na_e_int_newsub2, ex_int, 1);
                 }
                 if ( CheckNaIbgGate(na_t_c_newsub2) ) {
                   weight = -1;
                   m_alfna_newsubtract->Fill(na_e_int_newsub2, ex_int, weight);
+                  m_alfna_bg_newsubtract->Fill( na_e_int_newsub2, ex_int, 1);
                 }
 
               }
