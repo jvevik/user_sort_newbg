@@ -75,10 +75,10 @@
     //m_nai_e er matrise med gammaenergi på x-aksen og NaI-detektornummer på y-aksen
      Histogram2Dp m_alfna, m_alfna_bg;
     //ALFNA og ALFNABAKGRUNN defineres
-     Histogram2Dp m_alfna_nofiss,   m_alfna_fiss, m_alfna_fiss_promptFiss;
+     Histogram2Dp m_alfna_nofiss,   m_alfna_fiss, m_alfna_fiss_promptFiss, m_alfna_fiss_all;
      Histogram2Dp m_alfna_bg_nofiss,              m_alfna_bg_fiss_promptFiss, m_alfna_bg_fiss_bg;
      //New background subtraction alfna:
-     Histogram2Dp m_alfna_newsubtract, m_alfna_newsubtract2, m_alfna_bg_newsubtract;
+     Histogram2Dp m_alfna_newsubtract, m_alfna_newsubtract_all, m_alfna_bg_newsubtract;
      Histogram2Dp m_alfna_nofiss_newsubtract, m_alfna_fiss_newsubtract, m_alfna_fiss_promptFiss_newsubtract;
      Histogram2Dp m_alfna_bg_nofiss_newsubtract, m_alfna_bg_fiss_promptFiss_newsubtract, m_alfna_bg_fiss_bg_newsubtract;
 
@@ -292,13 +292,15 @@ bool UserXY::Command(const std::string& cmd)
                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_fiss = Mat( "m_alfna_fiss", "E(NaI) : E_{x} coincidence with fission",
                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+     m_alfna_fiss_all = Mat( "m_alfna_fiss_all", "E(NaI) : E_{x} coincidence with fission",
+                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
 
 
       //NEW ALFNA and m_e_de plots using the new background subtraction:
       m_alfna_newsubtract =      Mat( "m_alfna_newsubtract", "E(NaI) : E_{x}",
                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
-      m_alfna_newsubtract2 =      Mat( "m_alfna_newsubtract2", "E(NaI) : E_{x}",
-                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+      m_alfna_newsubtract_all =      Mat( "m_alfna_newsubtract_all", "E(NaI) : E_{x}",
+                                  2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
       m_alfna_nofiss_newsubtract = Mat( "m_alfna_nofiss_newsubtract", "E(NaI) : E_{x} veto for fission",
                           2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
       m_alfna_bg_newsubtract =   Mat( "m_alfna_bg_newsubtract", "E(NaI) : E_{x} background",
@@ -717,13 +719,14 @@ bool UserXY::Sort(const Event& event)
         const int ide = event.na[j].chn;
 
         if ( !IsPPACChannel(ide) )
-             continue;
+            continue;
 
         const double na_e_f = calib( (int)event.na[j].adc, gain_na[ide], shift_na[ide] );
 
         const double na_t_f = calib( (int)event.na[j].tdc/8, gain_tna[ide], shift_tna[ide] );
 
         const int   ppac_t_c = (int)tPpac(na_t_f,e);
+
 
 //        if ( na_t_f>190 && na_t_f<220 && na_e_f>1195 && na_e_f<1225 ) fiss = 1;
 // // Fabio: don't want energy requirement at the moment
@@ -919,6 +922,7 @@ bool UserXY::Sort(const Event& event)
              weight = 1;
              m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, weight);
              m_alfna_fiss->Fill( na_e_int, ex_int, weight);
+             m_alfna_fiss_all->Fill( na_e_int, ex_int, weight);
 
              weight = - 1/ppac_efficiency[0];
              m_alfna_nofiss->Fill( na_e_int, ex_int, weight);
@@ -946,36 +950,6 @@ bool UserXY::Sort(const Event& event)
 #endif /* USE_FISSION_PARAMETERS>0 */
  //****************************************************************************************************
 
-#if USE_FISSION_PARAMETERS>0
-
-  for(int i=0; i<event.n_na; i++) {
-
-    const int idnum4 = event.na[i].chn;
-
-    if (IsPPACChannel(idnum4) ){
-
-    const double ppac_t_c_newsub22 = calib( (int)event.na[i].tdc/8, gain_tna[idnum4], shift_tna[idnum4] );
-
-    const double na_e_f_newsub22 = calib( (int)event.na[i].adc, gain_na[idnum4], shift_na[idnum4] );
-
-    const double na_t_f_newsub22 = calib( (int)event.na[i].tdc/8, gain_tna[idnum4], shift_tna[idnum4] );
-
-    const int na_e_int_newsub22 = (int)na_e_f_newsub22;
-    const int na_t_int_newsub22 = (int)na_t_f_newsub22;
-    const int na_t_c_newsub22 = (int)tNaI(na_t_f_newsub22, na_e_f_newsub22, e);
-
-
-
-    double weight = 1;
-
-    if ( CheckNaIpromptGate(na_t_c_newsub22) ) {
-        weight = 1;
-        m_alfna_newsubtract2->Fill( na_e_int_newsub22, ex_int, weight);
-
-    }
-  }
- }
-#endif /* USE_FISSION_PARAMETERS */
 
 
 
@@ -1014,7 +988,9 @@ bool UserXY::Sort(const Event& event)
             if ( CheckNaIpromptGate(na_t_c_newsub) ) {
                 weight = 1;
                 m_alfna_newsubtract->Fill( na_e_int_newsub, ex_int, weight);
+                m_alfna_newsubtract_all->Fill( na_e_int_newsub, ex_int, weight);
             }
+
             if ( CheckNaIbgGate(na_t_c_newsub) ) {
                 weight = -1;
                 m_alfna_newsubtract->Fill( na_e_int_newsub, ex_int, weight);
