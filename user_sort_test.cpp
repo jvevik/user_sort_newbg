@@ -713,6 +713,8 @@ bool UserXY::Sort(const Event& event)
     // fiss = 0 -> by default, an event is not considered as a fission event; changed only if recognized in the for loop below
     int fiss = 0;
 
+
+
 #if USE_FISSION_PARAMETERS>0
      for( int j=0; j<event.n_na; j++ ) {
 
@@ -730,8 +732,11 @@ bool UserXY::Sort(const Event& event)
 
 //        if ( na_t_f>190 && na_t_f<220 && na_e_f>1195 && na_e_f<1225 ) fiss = 1;
 // // Fabio: don't want energy requirement at the moment
-        if ( CheckPPACpromptGate(ppac_t_c) &&  fission_excitation_energy_min[0] < e )   fiss = 1; // select fission blob in tPPAC vs E_SiRi gate
-        if ( CheckPPACbgGate(ppac_t_c)     &&  fission_excitation_energy_min[0] < e )   fiss = 2; // added these to also see background fissions
+//        if ( CheckPPACpromptGate(ppac_t_c) &&  fission_excitation_energy_min[0] < e )   fiss = 1; // select fission blob in tPPAC vs E_SiRi gate
+//        if ( CheckPPACbgGate(ppac_t_c)     &&  fission_excitation_energy_min[0] < e )   fiss = 2; // added these to also see background fissions
+            if ( CheckPPACpromptGate(ppac_t_c) )   fiss = 1; // select fission blob in tPPAC vs E_SiRi gate
+            if ( CheckPPACbgGate(ppac_t_c) )   fiss = 2; // added these to also see back
+
     }
  #endif /* USE_FISSION_PARAMETERS */
 //****************************************************************************************************
@@ -758,11 +763,6 @@ bool UserXY::Sort(const Event& event)
      m_e_de_strip[dei]->Fill( e_int, de_int );
      m_e_de->Fill( e_int, de_int );
 
-     //Changed by me and Tellef:
-     //const double ede = e+de;
-     //const int   ede_int = (int)ede;
-     //h_ede_individual[ei][dei]->Fill( ede_int );
-     //#####
 
      const double thick = range(e+de)-range(e);
      h_thick->Fill( (int)thick );
@@ -948,6 +948,14 @@ bool UserXY::Sort(const Event& event)
              m_alfna_nofiss->Fill( na_e_int, ex_int, weight);
          }
 #endif /* USE_FISSION_PARAMETERS>0 */
+
+
+#if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
+        m_nai_e_evol[id]->Fill( na_e_int, timediff, weight );
+        m_nai_t_evol[id]->Fill( na_t_c,   timediff );
+
+#endif /* MAKE_TIME_EVOLUTION_PLOTS */
+    }
  //****************************************************************************************************
 
 
@@ -964,9 +972,12 @@ bool UserXY::Sort(const Event& event)
         if ( IsPPACChannel(idnum) ){
 
 
+
+
         const double ppac_t_c_newsub = calib( (int)event.na[i].tdc/8, gain_tna[idnum], shift_tna[idnum] );
 
-        if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
+        //if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
+        if ( CheckPPACpromptGate(ppac_t_c_newsub) ) {
 
         for( int j=0; j<event.n_na; j++){
 
@@ -998,11 +1009,11 @@ bool UserXY::Sort(const Event& event)
             }
 
            }
-            }
+           }
 
           }
-          else if ( CheckPPACbgGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
-
+          //else if ( CheckPPACbgGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
+          else if ( CheckPPACbgGate(ppac_t_c_newsub) ) {
             for( int k=0; k<event.n_na; k++){
 
                 const int idnum3 = event.na[k].chn;
@@ -1042,12 +1053,6 @@ bool UserXY::Sort(const Event& event)
 
 #endif /* USE_FISSION_PARAMETERS */
 
-#if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
-        m_nai_e_evol[id]->Fill( na_e_int, timediff, weight );
-        m_nai_t_evol[id]->Fill( na_t_c,   timediff );
-
-#endif /* MAKE_TIME_EVOLUTION_PLOTS */
-    }
 #if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
     m_e_evol  [ei]     ->Fill( e_int,   timediff );
     m_de_evol [ei][dei]->Fill( de_int,  timediff );
