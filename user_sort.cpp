@@ -82,6 +82,8 @@
      Histogram2Dp m_alfna_nofiss_newsubtract, m_alfna_fiss_newsubtract, m_alfna_fiss_promptFiss_newsubtract;
      Histogram2Dp m_alfna_bg_nofiss_newsubtract, m_alfna_bg_fiss_promptFiss_newsubtract, m_alfna_bg_fiss_bg_newsubtract;
 
+     Histogram1Dp number_of_fissions, number_of_fissions_bg, number_of_fissions_all;
+
      Histogram1Dp h_na_n, h_thick, h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
      Histogram1Dp h_ex, h_ex_nofiss, h_ex_fiss_promptFiss, h_ex_fiss_bg, h_ex_fiss;
 
@@ -217,7 +219,7 @@ bool UserXY::Command(const std::string& cmd)
 #endif /* USE_FISSION_PARAMETERS */
  {
      ede_rect.Set( "500 250 30 500" );
-     thick_range.Set( "130  13 0" );
+     thick_range.Set( "130  15 0" );
 }
 
 
@@ -315,6 +317,13 @@ bool UserXY::Command(const std::string& cmd)
                     2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
       m_alfna_fiss_newsubtract = Mat( "m_alfna_fiss_newsubtract", "E(NaI) : E_{x} coincidence with fission",
                     2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+
+      number_of_fissions = Spec("number_of_fissions", "Number of fissions",
+                  2000,-2000,14000,"E_{x} [keV]");
+      number_of_fissions_all = Spec("number_of_fissions_all", "Number of fissions ALL",
+                  2000,-2000,14000,"E_{x} [keV]");
+      number_of_fissions_bg = Spec("number_of_fissions_bg", "Number of fissions BACKGROUND",
+                  2000,-2000,14000,"E_{x} [keV]");
 
       //################################################################
 
@@ -972,16 +981,19 @@ bool UserXY::Sort(const Event& event)
         if ( IsPPACChannel(idnum) ){
 
 
-
-
         const double ppac_t_c_newsub = calib( (int)event.na[i].tdc/8, gain_tna[idnum], shift_tna[idnum] );
 
         //if ( CheckPPACpromptGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
         if ( CheckPPACpromptGate(ppac_t_c_newsub) ) {
 
+          number_of_fissions->Fill(ex_int, 1);
+          number_of_fissions_all->Fill(ex_int, 1);
+
         for( int j=0; j<event.n_na; j++){
 
             const int idnum2 = event.na[j].chn;
+
+
 
             if ( !IsPPACChannel(idnum2)){
 
@@ -995,6 +1007,7 @@ bool UserXY::Sort(const Event& event)
             const int na_t_c_newsub = (int)tNaI(na_t_f_newsub, na_e_f_newsub, e);
 
             double weight = 1;
+
 
             if ( CheckNaIpromptGate(na_t_c_newsub) ) {
                 weight = 1;
@@ -1014,9 +1027,14 @@ bool UserXY::Sort(const Event& event)
           }
           //else if ( CheckPPACbgGate(ppac_t_c_newsub) &&  fission_excitation_energy_min[0] < e ) {
           else if ( CheckPPACbgGate(ppac_t_c_newsub) ) {
+            number_of_fissions->Fill(ex_int, -1);
+            number_of_fissions_bg->Fill(ex_int, 1);
+
             for( int k=0; k<event.n_na; k++){
 
                 const int idnum3 = event.na[k].chn;
+
+
 
                 if ( !IsPPACChannel(idnum3)){
 
@@ -1030,6 +1048,7 @@ bool UserXY::Sort(const Event& event)
                 const int na_t_c_newsub2 = (int)tNaI(na_t_f_newsub2, na_e_f_newsub2, e);
 
                 double weight = 1;
+
 
                 if ( CheckNaIpromptGate(na_t_c_newsub2) ) {
                   weight = -1;

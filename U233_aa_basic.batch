@@ -1,0 +1,173 @@
+# where to load the gainshifts from; one can also use:
+#   parameter gain_e = ...
+# and so on
+#gain file gainshifts_plain.dat
+#gain file gainshifts_pb_calib.dat
+#gain file gainshifts_pb_calib_newshifts.dat
+#gain file gainshifts_pb_calib_NaI_calib.dat
+#gain file gainshifts_NaI_gain1.dat
+#gain file gainshifts_pb_calib_NaI_3rd_calib.dat
+
+gain file gainshifts_pb_calib_NaI_4th_calib.dat
+
+
+# (leading edge) cactus energy correction parameters for cactus time
+#parameter tnai_corr_enai = 0 1 0 0
+#parameter tnai_corr_enai = -0.347207 4240.24 -168.938 -0.00185238 OLD
+parameter tnai_corr_enai = 1.12295 9123.99 -114.489 -0.00146555
+
+
+# (leading edge) siri energy correction parameters for cactus time
+#parameter tnai_corr_esi  = 0 1 0 0
+#parameter tnai_corr_esi  = -32.3865 -1319.09 -2163.93 0.00241086
+parameter tnai_corr_esi  = 71.7621 -921686 6390.15 -0.000509643
+
+
+################ Only when PPACs are used ##################################
+# energy/time correction parameters for PPAC
+# The correction for the PPAC counters are necessary due to SiRi, so
+# usually the same corrections parameters as in tnai_corr_esi should be used
+# ### comment out this line(s) if no PPACs are used
+#parameter tppac_corr_esi = 0 1 0 0
+parameter tppac_corr_esi  = 121.287 -2.39271e+06 14790.1 -0.001481
+############################################################################
+
+# Parameters for the range curve, 3He or alpha
+#rangefile zrange_he3.dat
+rangefile zrange_a.dat
+#rangefile zrange_d.dat
+#rangefile zrange_p.dat
+
+# Cut of low-energy events by making a rectangle which is excluded
+# in the down, left corner of the banana.
+# Contains E-minimum 1, DE-minimum 1, E-minimum 2, DE-minimum 2.
+# Including Z=1 particles:
+#parameter ede_rect  = 500 250 30 500
+# Excluding Z=1 particles:
+#parameter ede_rect  = 500 2500 2000 2500
+
+# Thickness gate for proton banana
+# parameter thick_range = 82 12 0
+# parameter thick_range = 125 15 0
+# parameter thick_range = 140 20 0
+# parameter thick_range = 276 75 0
+# parameter thick_range = 230 25 0
+
+# Thickness gate for 3He banana
+#parameter thick_range = 48 8 0
+
+# Thickness gate for alpha banana
+parameter thick_range = 130 15 0
+
+#No thickness gate
+#parameter thick_range = 100 1000 0
+
+
+# Fit of rkinz/qkinz column 1 as function of qkinz/rkinz column 6
+#  233U(a,a') -- REALLY CHANGE THESE TO YOUR REACTION!!!
+parameter ex_from_ede    = 2.5339026e+4 -9.02158e-1 -1.866e-6 \
+2.5297419e+4 -8.99569e-1 -1.899e-6 \
+2.5248470e+4 -8.96648e-1 -1.937e-6 \
+2.5191448e+4 -8.93369e-1 -1.979e-6 \
+2.5129472e+4 -8.90068e-1 -2.019e-6 \
+2.5053559e+4 -8.85969e-1 -2.074e-6 \
+2.4970512e+4 -8.81773e-1 -2.127e-6 \
+2.4874770e+4 -8.77050e-1 -2.188e-6
+
+# empirical excitation energy correction for the above, e.g. from known peaks
+parameter ex_corr_exp    =  1.26961e+01 1 \
+    9.67346e+00 1 \
+    9.62413e+00 1 \
+    7.58535e+00 1 \
+    1.25407e+01 1 \
+    2.23864e+01 1 \
+    3.35393e+01 1 \
+    4.42582e+01 1
+
+# NaI time gates, for making the ALFNA matrices
+# found by looking at the m_nai_t plot and projecting it
+# down to the x-axis/m_nai_e_t_c x-axis plot
+# remember to subtract the same amount of channels
+# as the ones that are filled, and make sure you "hit" a top!
+# parameter = lower cut of prompt ,     higher gate of prompt peak,  \
+#             lower cut on backgr.,     higher cut backgr.
+
+parameter nai_time_cuts = 164 184 \
+                          97 117
+
+
+############## Attention when no PPACs are used ###########################
+# define id of NaI detectors and PPAC detectors (need to change usersort for more then four PPACs!)
+# All other channel are considered as NaI detectors. In case you don't use fission detectors,
+# define this parameters as "-1" - all id's are positive numbers, thus none will match -1.
+# ### Corresponding line /without/ fission detectors:
+# parameter channel_PPAC = -1 -1 -1 -1
+# ### Corresponding line /with/ fission detectors: [adopt channel numbers]
+parameter channel_PPAC = 28 29 30 31
+
+################ Only when PPACs are used ##################################
+# PPAC time gates
+# time gates of the ppacs are found from the fission blob
+# in the m_siri_e_t_ppac plot (fission blob in tPPAC vs E_SiRi gate)
+# - time gates from the y-axis, and energy from the x-axis
+# parameter = lower cut of prompt ,     higher gate of prompt peak,  \
+#             lower cut on backgr.,     higher cut backgr.
+# ### comment out this line(s) if no PPACs are used
+#parameter ppac_time_cuts = 175 206 \
+#                           241 272
+parameter ppac_time_cuts = 195 202 \
+                           230 237
+
+# Energy gate on fission
+# the energy gate is found by looking at the
+# m_siri_e_t_ppac plot (fission blob in tPPAC vs E_SiRi gate)
+# - it should be roughly the fission barrier
+# (Fission starts at some point, only events with
+# a higher energy than excitation_energy_min can be true fission events)
+# ### comment out this line(s) if no PPACs are used
+parameter fission_excitation_energy_min = 4350  # in keV
+#parameter fission_excitation_energy_min = 9000  # in keV
+
+
+# Total efficiency of the PPACs in 4Pi
+parameter ppac_efficiency = 0.48
+############################################################################
+
+#data directory Datafiles
+# data directory /path/to/data_dir
+data directory /Users/Julian/datafiles-U233-2012
+
+#maximum number of buffers to read for each file; for testing
+#max_buffers 1
+
+#233U:
+data file sirius-20121005-114558.data
+data file sirius-20121005-165759.data
+data file sirius-20121005-190950.data
+data file sirius-20121005-204507.data
+data file sirius-20121005-222827.data
+data file sirius-20121005-222827-big-000.data
+data file sirius-20121007-074715.data
+#data file sirius-20121008-104210.data Test file. See comments in explog. Do not use.
+data file sirius-20121008-104751.data
+data file sirius-20121008-142103.data
+data file sirius-20121008-142103-big-000.data
+data file sirius-20121010-190708.data
+data file sirius-20121010-203639.data
+data file sirius-20121010-203639-big-000.data
+
+#208Pb:
+#data file sirius-20121012-152651.data
+
+#28Si:
+#data file sirius-20121012-143107.data
+
+
+# Write to MAMA matrix
+#export mama h_ex_f0 h_ex_f0_MAMA
+#export mama m_alfna_bg alfna_bg
+export mama m_alfna alfna
+
+# at the end, spectra are dumped to the root file
+# root output file
+export root offline_U233_aa_basic.root
