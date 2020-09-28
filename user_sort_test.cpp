@@ -88,7 +88,7 @@
      Histogram1Dp h_ex, h_ex_nofiss, h_ex_fiss_promptFiss, h_ex_fiss_bg, h_ex_fiss;
 
  #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
-     Histogram2Dp m_nai_e_t[28], m_nai_e_t_all, m_nai_e_t_c,         // CACTUS_Time_Energy_Plots
+     Histogram2Dp m_nai_e_t[28], m_nai_e_t_all, m_nai_e_t_c,  // CACTUS_Time_Energy_Plots
                   m_siri_e_t[8], m_siri_e_t_all, m_siri_e_t_c,       // SIRI_Time_Energy_Plots
                   m_ppac_e_t[4], m_ppac_e_t_all, m_ppac_e_t_c;      // PPAC_Time_Energy_Plots
      // for some reason needed, otherwise histograms in the following line are not ploted
@@ -300,7 +300,7 @@ bool UserXY::Command(const std::string& cmd)
 
       //NEW ALFNA and m_e_de plots using the new background subtraction:
       m_alfna_newsubtract =      Mat( "m_alfna_newsubtract", "E(NaI) : E_{x}",
-                         2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+                         2000, -500, 10910, "E_{#gamma} [keV]", 2000, -600, 12100, "E_{x} [keV]" );
       m_alfna_newsubtract_all =      Mat( "m_alfna_newsubtract_all", "E(NaI) : E_{x}",
                                   2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
       m_alfna_nofiss_newsubtract = Mat( "m_alfna_nofiss_newsubtract", "E(NaI) : E_{x} veto for fission",
@@ -852,6 +852,7 @@ bool UserXY::Sort(const Event& event)
          const int   na_t_int = (int)na_t;
 
          const int   na_t_c = (int)tNaI(na_t, na_e, e);
+
 
 #if USE_FISSION_PARAMETERS>0
          const int   ppac_t_c = (int)tPpac(na_t,e);
