@@ -92,8 +92,8 @@ parameter ex_corr_exp    =  1.26961e+01 1 \
 # parameter = lower cut of prompt ,     higher gate of prompt peak,  \
 #             lower cut on backgr.,     higher cut backgr.
 
-parameter nai_time_cuts = 165 185 \
-                          253 273
+parameter nai_time_cuts = 164 186 \
+                          268 290
 
 
 ############## Attention when no PPACs are used ###########################
@@ -113,10 +113,8 @@ parameter channel_PPAC = 28 29 30 31
 # parameter = lower cut of prompt ,     higher gate of prompt peak,  \
 #             lower cut on backgr.,     higher cut backgr.
 # ### comment out this line(s) if no PPACs are used
-#parameter ppac_time_cuts = 175 206 \
-#                           241 272
-parameter ppac_time_cuts = 195 202 \
-                           230 237
+parameter ppac_time_cuts = 194 203 \
+                           298 307
 
 # Energy gate on fission
 # the energy gate is found by looking at the
