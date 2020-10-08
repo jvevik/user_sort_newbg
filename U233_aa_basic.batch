@@ -8,7 +8,7 @@
 #gain file gainshifts_NaI_gain1.dat
 #gain file gainshifts_pb_calib_NaI_3rd_calib.dat
 
-#gain file gainshifts_final_nanosec.dat
+
 gain file gainshifts_pb_calib_NaI_4th_calib.dat
 
 
@@ -119,8 +119,8 @@ parameter channel_PPAC = 28 29 30 31
 # ### comment out this line(s) if no PPACs are used
 #parameter ppac_time_cuts = 175 206 \
 #                           241 272
-parameter ppac_time_cuts = 195 202 \
-                           230 237
+parameter ppac_time_cuts = 194 203 \
+                           298 307
 
 # Energy gate on fission
 # the energy gate is found by looking at the

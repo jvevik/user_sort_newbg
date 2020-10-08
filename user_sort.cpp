@@ -279,7 +279,7 @@ bool UserXY::Command(const std::string& cmd)
 
 
      m_alfna =      Mat( "m_alfna", "E(NaI) : E_{x}",
-                        2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+                        2000, -2000, 14000, "E_{#gamma} [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_nofiss = Mat( "m_alfna_nofiss", "E(NaI) : E_{x} veto for fission",
                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_bg =   Mat( "m_alfna_bg", "E(NaI) : E_{x} background",
@@ -371,7 +371,7 @@ bool UserXY::Command(const std::string& cmd)
      m_nai_e_t_all = Mat( "m_nai_e_t", "t : E NaI all together",
                          500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
      m_nai_e_t_c   = Mat( "m_nai_e_t_c", "t : E NaI all together, corrected",
-                          500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
+                          500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [Channel]" );
      m_nai_e_t_all_fiss_promptFiss = Mat( "m_nai_e_t_fiss_promptFiss", "t : E NaI all together",
                           500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.], PPAC coincidence" );
      m_nai_e_t_c_fiss_promptFiss   = Mat( "m_nai_e_t_c_fiss_promptFiss", "t : E NaI all together, corr, PPAC coincidence",
