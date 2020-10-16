@@ -82,6 +82,7 @@
      Histogram2Dp m_alfna_nofiss_newsubtract, m_alfna_fiss_newsubtract, m_alfna_fiss_promptFiss_newsubtract;
      Histogram2Dp m_alfna_bg_nofiss_newsubtract, m_alfna_bg_fiss_promptFiss_newsubtract, m_alfna_bg_fiss_bg_newsubtract;
 
+     Histogram2Dp number_of_fissions_3D;
      Histogram1Dp number_of_fissions, number_of_fissions_bg, number_of_fissions_all;
 
      Histogram1Dp h_na_n, h_thick, h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
@@ -324,6 +325,8 @@ bool UserXY::Command(const std::string& cmd)
                   2000,-2000,14000,"E_{x} [keV]");
       number_of_fissions_bg = Spec("number_of_fissions_bg", "Number of fissions BACKGROUND",
                   2000,-2000,14000,"E_{x} [keV]");
+      number_of_fissions_3D = Mat( "number_of_fissions_3D", "E_{x} : PPAC time, number of fissions 3d",
+                  2000, -2000, 14000, "E_{x} [keV]", 2000, -2000, 14000, "PPAC time ?" );
 
       //################################################################
 
@@ -796,7 +799,9 @@ bool UserXY::Sort(const Event& event)
 
      // make experimental corrections
      const double ex = ex_corr_exp[2*dei]+ex_corr_exp[2*dei+1]*ex_theo;
-     const int   ex_int = (int)ex;
+     // correction for the diagonal:
+     const double ex_diag = ex*0.7924907471663196 + 140.24866990515875;
+     const int   ex_int = (int)ex_diag;
      //printf("%d",ex_int);
 
      h_ex->Fill( ex_int );
@@ -989,6 +994,7 @@ bool UserXY::Sort(const Event& event)
 
           number_of_fissions->Fill(ex_int, 1);
           number_of_fissions_all->Fill(ex_int, 1);
+          number_of_fissions_3D->Fill(ex_int, ppac_t_c_newsub, 1);
 
         for( int j=0; j<event.n_na; j++){
 
@@ -1030,6 +1036,7 @@ bool UserXY::Sort(const Event& event)
           else if ( CheckPPACbgGate(ppac_t_c_newsub) ) {
             number_of_fissions->Fill(ex_int, -1);
             number_of_fissions_bg->Fill(ex_int, 1);
+            number_of_fissions_3D->Fill(ex_int, ppac_t_c_newsub, -1);
 
             for( int k=0; k<event.n_na; k++){
 
